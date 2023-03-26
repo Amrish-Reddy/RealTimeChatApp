@@ -1,0 +1,209 @@
+<html><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Realtime Chat App</title>
+  <style>
+    /* Add styles here */
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: #009688;
+      color: #fff;
+      font-size: 24px;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      overflow-y: scroll;
+    }
+    
+    .chat-input {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    
+    .chat-input input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+    
+    .chat-input input[type="submit"] {
+      padding: 10px 20px;
+      background-color: #009688;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    .message {
+      margin: 10px;
+      padding: 10px;
+      background-color: #f2f2f2;
+      border-radius: 5px;
+      display: inline-block;
+      max-width: 70%;
+    }
+    
+    .message-sender {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="chat-header">
+      <div>Realtime Chat App</div>
+      <div id="user-name">Logged in as: null</div>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+      <input type="text" id="message-input" placeholder="Type your message...">
+      <input type="submit" value="Send" id="send-button">
+    </div>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+  <script>
+            // Add Firebase configuration here
+    const firebaseConfig = {
+      apiKey: "AIzaSyDmZ-V5uEvdp1H9zTnferjjj_a_jjyy_WE",
+      authDomain: "chatapp-4e7c5.firebaseapp.com",
+      projectId: "chatapp-4e7c5",
+      storageBucket: "chatapp-4e7c5.appspot.com",
+      messagingSenderId: "324912198408",
+      appId: "1:324912198408:web:cada1f9364a3a8ba4b0124"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    const database = firebase.database();
+    
+    // Get user name from prompt
+    const userName = prompt("Please enter your name");
+    document.getElementById("user-name").innerText = `Logged in as: ${userName}`;
+
+    // Get a reference to the chat messages div and the message input field
+    const chatMessages = document.getElementById("chat-messages");
+    const messageInput = document.getElementById("message-input");
+    
+    // Send a message to the database
+    function sendMessage() {
+      const messageText = messageInput.value.trim();
+      if (messageText === "") return;
+
+      const newMessageRef = database.ref().child("messages").push();
+      newMessageRef.set({
+        sender: userName,
+        message: messageText
+      });
+
+      messageInput.value = "";
+    }
+
+    // Listen for new messages in the database
+    database.ref("messages").on("child_added", (snapshot) => {
+      const message = snapshot.val();
+      const messageElement = document.createElement("div");
+      const senderElement = document.createElement("div");
+      const messageTextElement = document.createElement("div");
+
+      senderElement.textContent = message.sender;
+      messageTextElement.textContent = message.message;
+
+      if (message.sender === userName) {
+        messageElement.classList.add("message", "sent");
+      } else {
+        messageElement.classList.add("message", "received");
+      }
+
+      messageElement.appendChild(senderElement);
+      messageElement.appendChild(messageTextElement);
+      chatMessages.appendChild(messageElement);
+    });
+
+    // Send a message when the send button is clicked
+    document.getElementById("send-button").addEventListener("click", sendMessage);
+
+    // Send a message when the enter key is pressed in the message input field
+    messageInput.addEventListener("keypress", (event) => {
+      if (event.key === "Enter") {
+        sendMessage();
+      }
+    });
+  </script>
+<!-- Code injected by live-server -->
+<script>
+// <![CDATA[  <-- For SVG support
+if ('WebSocket' in window) {
+  (function () {
+    function refreshCSS() {
+      var sheets = [].slice.call(document.getElementsByTagName("link"));
+      var head = document.getElementsByTagName("head")[0];
+      for (var i = 0; i < sheets.length; ++i) {
+        var elem = sheets[i];
+        var parent = elem.parentElement || head;
+        parent.removeChild(elem);
+        var rel = elem.rel;
+        if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+          var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+          elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+        }
+        parent.appendChild(elem);
+      }
+    }
+    var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+    var address = protocol + window.location.host + window.location.pathname + '/ws';
+    var socket = new WebSocket(address);
+    socket.onmessage = function (msg) {
+      if (msg.data == 'reload') window.location.reload();
+      else if (msg.data == 'refreshcss') refreshCSS();
+    };
+    if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+      console.log('Live reload enabled.');
+      sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+    }
+  })();
+}
+else {
+  console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+}
+// ]]>
+</script>
+
+
+
+
+</body></html>
